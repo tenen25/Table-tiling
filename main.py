@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.cm as cm
@@ -109,12 +111,61 @@ def BuiltTile(num, type):       #Generates the num-th iteration of the table til
                       d_count = d_count + 2
         table = newTable.copy()
         n = n*2
-    print("The staistics for the "+str(num) +Suffix(num) +" iterated tile is as follows:")
+    str(itera) + Suffix(itera) + " iterated tile corresponding to Tile type " + str(tileType)
+    print("The staistics for the "+str(num) +Suffix(num) +" iterated tile corresponding to tile"\
+     +str(type)  +" is as follows:")
     print("Number of 'a' tiles is " + str(a_count))
     print("Number of 'b' tiles is " + str(b_count))
     print("Number of 'c' tiles is " + str(c_count))
     print("Number of 'd' tiles is " + str(d_count))
     return newTable
+
+def gen_tile(num):
+    if num == 1:
+        start = 3
+    else:
+        start =1
+    for j in range(start,7):
+        lett="No"
+        if j>2:
+            if (j-2)==1: lett = "a"
+            elif (j-2)==2: lett = "b"
+            elif (j-2)==3: lett = "c"
+            else: lett = "d"
+            file_name = str(num)+Suffix(num)+" iteration,"\
+            +lett+" starting tile"
+        else:
+            lett = str(j)+Suffix(j)
+            file_name = str(num) + Suffix(num) + " iteration," \
+                        + lett + " starting tile"
+        tile = BuiltTile(num, j)
+        np.savetxt(file_name+".txt", tile, delimiter=",")
+
+def print_tile(num):
+    if num == 1:
+        start = 3
+    else:
+        start =1
+    fig, axs = plt.subplots(3, 2)
+    fig.suptitle(str(num) +Suffix(num)+" iterated tiles")
+    for j in range(start,7):
+        lett="No"
+        if j>2:
+            if (j-2)==1: lett = "a"
+            elif (j-2)==2: lett = "b"
+            elif (j-2)==3: lett = "c"
+            else: lett = "d"
+            read_name = str(num)+Suffix(num)+" iteration,"\
+            +lett+" starting tile"
+        else:
+            lett = str(j)+Suffix(j)
+            read_name = str(num) + Suffix(num) + " iteration," \
+                        + lett + " starting tile"
+        tile = np.loadtxt(read_name+".txt", delimiter=",")
+        axs[ (j-j%2)/2 ,j%2].plt.imshow(tile, vmin=0, vmax=255)
+    plt.show()
+
+
 
 
 def phase(x, y):                #Converts a float array of length 2 to complex array of length 2
@@ -179,7 +230,7 @@ def SubDiag(lett):              #assign diagonal values to OpMat based on the ti
         d : val4
     }.get(lett, 0)
 
-def tile_print( tileType, plotNum ):
+def tile_print( tileType, plotNum ):        #print the tile matrix in
     for j in range(plotNum+1):
         plt.subplot(3, 3, j)
         M = BuiltTile(j+1, tileType)
@@ -215,7 +266,8 @@ def sample_numth_eig(itera, res, num, tileType): # iter is the iteration number,
                         eig_mat[1][j] = min(vect[j], eig_mat[1][j])
     return eig_mat
 
-def sample_numth_eig_new(itera, res, num, tileType): # iter is the iteration number, res is the sampling resolution, num is the eigenvlaue number
+def sample_numth_eig_new(itera, res, num, tileType): # iter is the iteration number,\
+    # res is the sampling resolution, num is the eigenvlaue number
     x = np.linspace(-cmath.pi, cmath.pi, res+1 )
     y = np.linspace(-cmath.pi, cmath.pi, res+1 )
     size = 2**(2*itera)
@@ -244,9 +296,10 @@ def sample_numth_eig_new(itera, res, num, tileType): # iter is the iteration num
                     else:
                         eig_mat[0][j] = max(vect[j] , eig_mat[0][j] )
                         eig_mat[1][j] = min(vect[j], eig_mat[1][j])
+                print("("+str(x[k])+","+str(y[l])+")"+" computed")
     return eig_mat
 
-def min_sample(itera, num, tileType):
+def min_sample(itera, num, tileType):       #smapling algorithm for minimum of points
     size = 2 ** (2 * itera)
     Tile = BuiltTile(itera, tileType)
     mat_0 = Op_Mat_NoPhase(itera, Tile)
@@ -278,7 +331,7 @@ def min_sample(itera, num, tileType):
             eig_mat[1][eig_num] = max(vect_mid[eig_num], vect_horiz[eig_num], vect_vert[eig_num], vect_corner[eig_num])
         return eig_mat
 
-def plot_mat(mat, res, num):
+def plot_mat(mat, res, num):        #Generates a wire frame plot for a 2d array
     x = np.linspace(-cmath.pi, cmath.pi, res + 1)
     y = np.linspace(-cmath.pi, cmath.pi, res + 1)
     fig = plt.figure()
@@ -378,7 +431,7 @@ def print_tot_band_min(init_itera, fin_itera):
     plt.show()
 
 def print_tot_band(init_itera, fin_itera, res, tileType):
-    plt.xlabel('X-axis')
+    plt.xlabel('Spectrum values')
     plt.ylabel('Iteration number')
     plt.title("Tile "+str(tileType-2)+" spectrum, "+ str(init_itera)+"-"+str(fin_itera-1)+" iterations")
     for l in range(init_itera, fin_itera):
@@ -392,12 +445,12 @@ def print_tot_band(init_itera, fin_itera, res, tileType):
             plt.plot(x[i], y[i], color='green')
     plt.show()
 
-def SubColor(num):              #assign tile types based on the number
+def SubColor(num):              #assign colors to tile types based on the number
     return{
         1 : 'blue',
         2 : 'green',
         3 : 'purple',
-        4 : 'brown'
+        4 : 'black'
     }.get(num, 0)
 
 def check_input(itera, res, eig_num, tileType, type):      #checks stages of computation
@@ -409,6 +462,9 @@ def check_input(itera, res, eig_num, tileType, type):      #checks stages of com
         plt.show()
     if type == "Tile Print":
         tile_print( tileType, itera )
+    if type == "GEN-TILE":                  #Generates different tiles and saves as txt files
+        for j in range(itera+1, itera +5):
+            gen_tile(j)
     if type=="matrix":                      #Check matrix algorithm
         Tile = BuiltTile(itera, tileType)
         M = Op_Mat(itera, Tile, phase(cmath.pi, -cmath.pi))
@@ -459,8 +515,57 @@ def check_input(itera, res, eig_num, tileType, type):      #checks stages of com
                     x[i] = np.linspace(mat[1][i], mat[0][i], 3)
                     y[i] = [l+ s/10 for j in range(3)]
                     plt.plot(x[i], y[i], color= colour)
-        plt.title("Spectrum of different tile iterations, "+str(itera)+"-"+str(itera+gap))
+        title_name="Spectrum of different tile iterations, "+str(itera)+"-"+str(itera+gap)
+        plt.title(title_name)
         plt.show()
+    if type == "SPEC-BANDS-GEN":
+        size = 2 ** (2 * itera)
+        for s in range(1, 5):
+            mat = sample_numth_eig_new(itera, res, 0, s+2)
+            file_name = str(itera)+Suffix(itera)+" spec bands, "\
+            + str(s+2)+" tile, diag "+str( round(val1,3) )+" "+str( round(val2,3) )+" " \
+            +str( round(val3,3) ) + " " + str( round(val4,3) )
+            np.savetxt(file_name+".txt", mat, delimiter=',')
+    if type == "SPEC-TOT-PLOT":
+        fig = plt.figure()
+        ax = fig.add_subplot()
+        for s in range(1, 5):
+            colour = SubColor(s)
+            for l in range(itera, itera+gap+1):
+                size = 2 ** (2 * l)
+                read_name = str(l)+Suffix(l)+" spec bands, "\
+                + str(s+2)+" tile, diag "+str( round(val1,3) )+" "+str( round(val2,3) )+" " \
+                +str( round(val3,3) ) + " " + str( round(val4,3) )
+                mat = np.loadtxt(read_name+".txt", delimiter=',')
+                x = [[0.0 for j in range(2)] for i in range(size)]
+                y = [0.0 for i in range(size)]
+                for i in range(size):
+                    x[i] = np.linspace(mat[1][i], mat[0][i], 3)
+                    y[i] = [l+ s/10 for j in range(3)]
+                    plt.plot(x[i], y[i], color= colour)
+        title_name="Spectrum of different tile iterations, "+str(itera)+"-"+str(itera+gap)\
+        +", diag "+str( round(val1,3) )+":"+str( round(val2,3) )+":"\
+        + str( round(val3,3) ) + ":" + str( round(val4,3) )
+        ax.set_xlabel('Spectrum values')
+        ax.set_ylabel('Iteration number')
+        plt.title(title_name)
+        plt.show()
+    if type == "SPEC-STR-MONO":
+        true_val = True
+        size_1 = 2**(2*itera)
+        size_2 = 2**(2*(itera+2))
+        file_name = str(itera) + Suffix(itera) + " spec bands, " \
+                    + str(s + 2) + " tile, diag " + str(val1) + " " + str(val2) + " " \
+                    + str(val3) + " " + str(val4)
+        mat_1 = np.loadtxt(read_name+".txt", delimiter=",")
+        while(true_val == True):
+            for j in range(size_1):
+                start = mat_1[1][j]
+                end = mat_1[0][j]
+
+
+
+
 
 
     print("End of program test-run.")
@@ -484,14 +589,15 @@ if type!="tile" and type!="SELF":
     #val4 = 4#0     #assign potential value to letter 'd'
 if type=="SELF":
      val1 = 0#0     #assign potential value to letter 'a'
-     val2 = 9#0     #assign potential value to letter 'b'
-     val3 = 19#0     #assign potential value to letter 'c'
-     val4 = 29#0     #assign potential value to letter 'd'
-     itera = 1
+     val2 = 6*math.sqrt(2)#9     #assign potential value to letter 'b'
+     val3 = 10*math.sqrt(3)#19     #assign potential value to letter 'c'
+     val4 = 9*math.pi#29     #assign potential value to letter 'd'
+     itera = 6
      res = 20
      eig_num = 15
      tileType = 3
-     check_input(itera, res, eig_num, tileType, "SPEC TOTAL2")
+     check_input(itera, res, eig_num, tileType, "SPEC-BANDS-GEN")
+     #print_tile(2)
 else:
     itera = int(input("Enter iteration number:"))     #iteration number of substitution, should be larger than 2
     res = 0
