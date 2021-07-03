@@ -8,7 +8,7 @@ from matplotlib import interactive
 from numpy import linalg as LA
 import cmath
 
-gap=4
+gap=3
 
 a = 0   #initialize letter values for plotting in matplot
 b = 64
@@ -44,12 +44,8 @@ def print_mat(mat, size):               # prints 2d array in a more pleasing man
     for i in range(size):
         print(mat[i])
 
-def save_arr(num_arr, str):
-    file_str = str=".txt"
-    a_file = open(file_str, "w")
-    for row in num_arr:
-        np.savetxt(file_str, row)
-    a_file.close()
+def to_tuple(arr):
+    return tuple(map(tuple, arr))
 
 def BuiltTile(num, type):       #Generates the num-th iteration of the table tiling patch according to initial patch
     if type == 1:
@@ -65,12 +61,12 @@ def BuiltTile(num, type):       #Generates the num-th iteration of the table til
         elif type == 5: table = tile5
         elif type == 6: table = tile6
     wid = 2**num
-    newTable = [['e' for x in range(wid)] for y in range(wid)]
     a_count = 0
     b_count = 0
     c_count = 0
     d_count = 0
     while n < wid:
+        newTable = [['e' for x in range(2*n)] for y in range(2*n)]
         for k in range(n):
             for l in range(n):
                 if table[k][l] == a:
@@ -144,9 +140,10 @@ def gen_tile(num):
 def print_tile(num):
     if num == 1:
         start = 3
+        fig, axs = plt.subplots(2, 2)
     else:
         start =1
-    fig, axs = plt.subplots(3, 2)
+        fig, axs = plt.subplots(3, 2)
     fig.suptitle(str(num) +Suffix(num)+" iterated tiles")
     for j in range(start,7):
         lett="No"
@@ -157,14 +154,43 @@ def print_tile(num):
             else: lett = "d"
             read_name = str(num)+Suffix(num)+" iteration,"\
             +lett+" starting tile"
-        else:
+        elif j<=2:
             lett = str(j)+Suffix(j)
             read_name = str(num) + Suffix(num) + " iteration," \
                         + lett + " starting tile"
         tile = np.loadtxt(read_name+".txt", delimiter=",")
         axs[ (j-j%2)/2 ,j%2].plt.imshow(tile, vmin=0, vmax=255)
-    plt.show()
+plt.show()
 
+def subpatches(itera, tile_type, size):
+    if tile_type>2:
+        if tile_type==3: tile_type='a'
+        elif tile_type==4: tile_type='b'
+        elif tile_type == 5: tile_type = 'c'
+        elif tile_type == 6: tile_type = 'd'
+        read_name = str(itera) + Suffix(itera) + " iteration," \
+                    + str(tile_type)  + " starting tile"
+    else:
+        read_name = str(itera) + Suffix(itera) + " iteration," \
+                + str(tile_type)+Suffix(tile_type) + " starting tile"
+    patch = np.loadtxt(read_name+".txt", delimiter=",")
+    sub_patch = set()
+    wid = 2**itera
+    temp = np.zeros( (size,size) )
+    for i in range(wid):
+        for j in range(wid):
+            for l in range(size):
+                for k in range(size):
+                    temp[l][k] = patch[(i+l)%wid][(j+k)%wid]
+            temp2 = to_tuple(temp)
+            sub_patch.add(temp2)
+    write_name = str(size)+"x"+str(size)+ " subpatches of " + read_name
+    sub_patch_list = list(sub_patch)
+    textfile = open(write_name, "w")
+    for element in  sub_patch_list:
+        textfile.write(str(element) + "\n")
+    textfile.close()
+    return sub_patch
 
 
 
@@ -230,12 +256,72 @@ def SubDiag(lett):              #assign diagonal values to OpMat based on the ti
         d : val4
     }.get(lett, 0)
 
-def tile_print( tileType, plotNum ):        #print the tile matrix in
-    for j in range(plotNum+1):
-        plt.subplot(3, 3, j)
-        M = BuiltTile(j+1, tileType)
-        plt.imshow(M, vmin=0, vmax=255)
+def tile_print( num):        #print the tile matrix in
+    file_name = " starting tile"+".txt"
+    if num == 1:
+        start = 3
+        fig, ( (ax1, ax2), (ax3,ax4) ) = plt.subplots(2, 2)
+        fig.suptitle(str(num) + Suffix(num) + " iterated tiles")
+        name_1 = str(num) + Suffix(num)+ " iteration," + "a" + file_name
+        name_2 = str(num) + Suffix(num)+ " iteration," + "b" + file_name
+        name_3 = str(num) + Suffix(num) + " iteration," + "c" + file_name
+        name_4 = str(num) + Suffix(num) + " iteration," + "d" + file_name
+        tile1= np.loadtxt(name_1, delimiter=",")
+        tile2 = np.loadtxt(name_2, delimiter=",")
+        tile3 = np.loadtxt(name_3, delimiter=",")
+        tile4 = np.loadtxt(name_4, delimiter=",")
+        ax1.imshow(tile1, vmin=0, vmax=255)
+        ax2.imshow(tile2, vmin=0, vmax=255)
+        ax3.imshow(tile3, vmin=0, vmax=255)
+        ax4.imshow(tile4, vmin=0, vmax=255)
+    else:
+        start = 1
+        fig, ( (ax1, ax2), (ax3,ax4), (ax5,ax6) ) = plt.subplots(3, 2)
+        fig.suptitle(str(num) + Suffix(num) + " iterated tiles")
+        name_1 = str(num) + Suffix(num) + " iteration," + "1"+Suffix(1) + file_name
+        name_2 = str(num) + Suffix(num) + " iteration," + "2"+Suffix(2)  + file_name
+        name_3 = str(num) + Suffix(num) + " iteration," + "a" + file_name
+        name_4 = str(num) + Suffix(num) + " iteration," + "b" + file_name
+        name_5 = str(num) + Suffix(num) + " iteration," + "c" + file_name
+        name_6 = str(num) + Suffix(num) + " iteration," + "d" + file_name
+        tile1 = np.loadtxt(name_1, delimiter=",")
+        tile2 = np.loadtxt(name_2, delimiter=",")
+        tile3 = np.loadtxt(name_3, delimiter=",")
+        tile4 = np.loadtxt(name_4, delimiter=",")
+        tile5 = np.loadtxt(name_5, delimiter=",")
+        tile6 = np.loadtxt(name_6, delimiter=",")
+        ax1.imshow(tile1, vmin=0, vmax=255)
+        ax1.set_title('First')
+        ax2.imshow(tile2, vmin=0, vmax=255)
+        ax2.set_title('Second')
+        ax3.imshow(tile3, vmin=0, vmax=255)
+        ax3.set_title('A')
+        ax4.imshow(tile4, vmin=0, vmax=255)
+        ax4.set_title('B')
+        ax5.imshow(tile5, vmin=0, vmax=255)
+        ax5.set_title('C')
+        ax6.imshow(tile6, vmin=0, vmax=255)
+        ax6.set_title('D')
     plt.show()
+    '''for j in range(start, 7):
+        lett = "No"
+        if j > 2:
+            if (j - 2) == 1:
+                lett = "a"
+            elif (j - 2) == 2:
+                lett = "b"
+            elif (j - 2) == 3:
+                lett = "c"
+            else:
+                lett = "d"
+            read_name = str(num) + Suffix(num) + " iteration," \
+                        + lett + " starting tile"
+        elif j <= 2:
+            lett = str(j) + Suffix(j)
+            read_name = str(num) + Suffix(num) + " iteration," \
+                        + lett + " starting tile"
+        tile = np.loadtxt(read_name + ".txt", delimiter=",")
+        axs[(j - j % 2) / 2, j % 2].plt.imshow(tile, vmin=0, vmax=255)'''
 
 def sample_numth_eig(itera, res, num, tileType): # iter is the iteration number, res is the sampling resolution, num is the eigenvlaue number
     x = np.linspace(-cmath.pi, cmath.pi, res+1 )
@@ -358,15 +444,7 @@ def plot_mat(mat, res, num):        #Generates a wire frame plot for a 2d array
         ind_max =  np.unravel_index(np.argmax(mat, axis=None), mat.shape)
         ind_min =  np.unravel_index(np.argmin(mat, axis=None), mat.shape)
         plt.legend( [str( round( mat[ind_min],3)  )+ " to " + str( round(mat[ind_max],3) )] )
-        if num == 1:
-            suffix = "st"
-        elif num == 2:
-            suffix = "nd"
-        elif num == 3:
-            suffix = "rd"
-        else:
-            suffix = "th"
-        plt.title(str(num) +"-"+suffix+ " eigenvalue")
+        plt.title(str(num) +"-"+Suffix(num)+ " eigenvalue")
         print("Maximal value is obtained in "+ index_to_loc( ind_max, x, y ) +" and is " + str(round(mat[ind_max],4))+"." )
         print("Minimal value is obtained in " + index_to_loc( ind_min, x, y ) + " and is " + str(round(mat[ind_min],4))+"." )
         plt.show()
@@ -377,6 +455,29 @@ def index_to_loc( ind, x, y):               # translated index in array to locat
     loca[1] = y[ind[1]]
     stri = "("+ str(  round(loca[0] ,4) )+","+str( round(loca[1] ,4))+")"
     return stri
+
+def separate_bands(arr1, size):
+    loc = 0
+    ind = 0
+    arr2 = [[0.0 for a in range(size)  ] for s in range(2)]
+    while loc<size-1:
+        arr2[0][ind] = arr1[1][loc]
+        right = False
+        right_val = loc
+        while not right:
+            if right_val == size:
+                #right = True
+                break
+            right = ( arr1[0][right_val-1] < arr1[1][right_val])
+            if right:
+                break
+            if not right:
+                right_val = right_val+1
+        arr2[1][ind] = arr1[0][right_val]
+        loc = right_val+1
+        ind = ind+1
+    return arr2
+
 
 def print_band(size, mat, num):                  #print graph of spectral bands given matrix of maxima and minima
     x = [[0.0 for j in range(2)] for i in range(size)]
@@ -450,10 +551,12 @@ def SubColor(num):              #assign colors to tile types based on the number
         1 : 'blue',
         2 : 'green',
         3 : 'purple',
-        4 : 'black'
+        4 : 'black',
+        5 : 'm',
+        6 : 'y'
     }.get(num, 0)
 
-def check_input(itera, res, eig_num, tileType, type):      #checks stages of computation
+def check_input(itera, res, eig_num, tileType, type, patchSize):      #checks stages of computation
     size = 2 ** (2 * itera)
     if type=="tile":                        #Check tiling algorithm
         M = BuiltTile(itera, tileType)
@@ -461,10 +564,13 @@ def check_input(itera, res, eig_num, tileType, type):      #checks stages of com
         plt.title(str(itera)+Suffix(itera)+" iterated tile corresponding to Tile type "+str(tileType))
         plt.show()
     if type == "Tile Print":
-        tile_print( tileType, itera )
+        tile_print( itera )
     if type == "GEN-TILE":                  #Generates different tiles and saves as txt files
         for j in range(itera+1, itera +5):
             gen_tile(j)
+    if type == "SUB-PATCH":
+        patchSet = subpatches(itera, tileType, patchSize)
+        print(str(len(patchSet) ))
     if type=="matrix":                      #Check matrix algorithm
         Tile = BuiltTile(itera, tileType)
         M = Op_Mat(itera, Tile, phase(cmath.pi, -cmath.pi))
@@ -520,28 +626,32 @@ def check_input(itera, res, eig_num, tileType, type):      #checks stages of com
         plt.show()
     if type == "SPEC-BANDS-GEN":
         size = 2 ** (2 * itera)
-        for s in range(1, 5):
-            mat = sample_numth_eig_new(itera, res, 0, s+2)
+        if itera == 1: start=3
+        else: start=1
+        for s in range(start, 7):
+            mat = sample_numth_eig_new(itera, res, 0, s)
             file_name = str(itera)+Suffix(itera)+" spec bands, "\
-            + str(s+2)+" tile, diag "+str( round(val1,3) )+" "+str( round(val2,3) )+" " \
+            + str(s)+" tile, diag "+str( round(val1,3) )+" "+str( round(val2,3) )+" " \
             +str( round(val3,3) ) + " " + str( round(val4,3) )
             np.savetxt(file_name+".txt", mat, delimiter=',')
     if type == "SPEC-TOT-PLOT":
         fig = plt.figure()
         ax = fig.add_subplot()
-        for s in range(1, 5):
+        if itera == 1: start=3
+        else: start=1
+        for s in range(start, 7):
             colour = SubColor(s)
             for l in range(itera, itera+gap+1):
                 size = 2 ** (2 * l)
                 read_name = str(l)+Suffix(l)+" spec bands, "\
-                + str(s+2)+" tile, diag "+str( round(val1,3) )+" "+str( round(val2,3) )+" " \
+                + str(s)+" tile, diag "+str( round(val1,3) )+" "+str( round(val2,3) )+" " \
                 +str( round(val3,3) ) + " " + str( round(val4,3) )
                 mat = np.loadtxt(read_name+".txt", delimiter=',')
                 x = [[0.0 for j in range(2)] for i in range(size)]
                 y = [0.0 for i in range(size)]
                 for i in range(size):
                     x[i] = np.linspace(mat[1][i], mat[0][i], 3)
-                    y[i] = [l+ s/10 for j in range(3)]
+                    y[i] = [l+ (s-1)/10 for j in range(3)]
                     plt.plot(x[i], y[i], color= colour)
         title_name="Spectrum of different tile iterations, "+str(itera)+"-"+str(itera+gap)\
         +", diag "+str( round(val1,3) )+":"+str( round(val2,3) )+":"\
@@ -574,6 +684,7 @@ def check_input(itera, res, eig_num, tileType, type):      #checks stages of com
 #print("Possible check types:")
 #print(" *Tile plotting - 'tile' \n *Eigenvalue plotting - 'EIG PLOT' \n *Spectral bands sketch - 'SPEC BAND'")
 #type = input("Enter type of check:")              #Type of check in check_input function
+patchSize = 16
 type="SELF"
 if type!="tile" and type!="SELF":
     print("Please assign potential values to letters")
@@ -592,12 +703,12 @@ if type=="SELF":
      val2 = 6*math.sqrt(2)#9     #assign potential value to letter 'b'
      val3 = 10*math.sqrt(3)#19     #assign potential value to letter 'c'
      val4 = 9*math.pi#29     #assign potential value to letter 'd'
-     itera = 6
+     itera = 8
      res = 20
      eig_num = 15
-     tileType = 3
-     check_input(itera, res, eig_num, tileType, "SPEC-BANDS-GEN")
-     #print_tile(2)
+     tileType = 1
+     check_input(itera, res, eig_num, tileType, "SUB-PATCH", patchSize)
+     #tile_print(itera)
 else:
     itera = int(input("Enter iteration number:"))     #iteration number of substitution, should be larger than 2
     res = 0
